@@ -15,6 +15,8 @@
             --pattern-size: calc(var(--tile-size) * 2); 
             --tile-color-a: #1a1a1a; /* Very Dark Gray */
             --tile-color-b: #000000; /* Black */
+            /* New CSS variable for scroll duration, allows dynamic change */
+            --scroll-duration: 40s; 
         }
         
         /* Keyframe Animation for Pure Left Scroll */
@@ -39,8 +41,15 @@
             background-position: calc(var(--tile-size) * -1) 0;
             background-attachment: fixed; /* Ensures the pattern stays fixed */
             
-            /* Slowed down to 40 seconds duration */
-            animation: scrollLeft 40s linear infinite;
+            /* Uses the CSS variable for duration, which we change in JS */
+            animation: scrollLeft var(--scroll-duration) linear infinite;
+            /* Added transition for smooth speed change */
+            transition: all 0.5s ease-out; 
+        }
+
+        /* NEW: Class to override the duration for a slower effect */
+        .slow-scroll-mode {
+            --scroll-duration: 80s;
         }
 
         /* --- 2. Menu Item Hover and Transition Effects (Now also handles click state) --- */
@@ -78,7 +87,13 @@
     </style>
 </head>
 <!-- The body holds the background and centers the main content -->
-<body class="h-screen w-screen overflow-hidden scrolling-bg flex justify-center items-center">
+<body id="app-body" class="h-screen w-screen overflow-hidden scrolling-bg flex justify-center items-center">
+
+    <!-- UPDATED: Audio element for background music uses pause.ogg -->
+    <audio id="menu-music" loop>
+        <source src="pause.ogg" type="audio/ogg">
+        Your browser does not support the audio element.
+    </audio>
 
     <!-- Menu Container - Wraps all menus and acts as the central hub -->
     <div class="w-full max-w-4xl text-white px-8">
@@ -134,10 +149,9 @@
 
             <!-- Detailed Options List -->
             <div class="space-y-4 ml-6">
-                <!-- Volume Option (Updated to be interactive) -->
+                <!-- Volume Option (Interactive) -->
                 <div id="volume-control" class="menu-item flex justify-between items-center" data-action="adjust-volume">
                     <span>PH Master Volume</span>
-                    <!-- Added ID for easy JS targeting -->
                     <span id="volume-value" class="text-white/50 text-xl font-normal">[ 50% ]</span>
                 </div>
                 <!-- Display Option (Visual Placeholder) -->
@@ -169,14 +183,37 @@
     </div>
 
     <script>
-        // Get all menu screens
+        // Get primary elements
+        const appBody = document.getElementById('app-body');
         const menuScreens = document.querySelectorAll('.menu-screen');
+        const menuMusic = document.getElementById('menu-music');
+
+        // State flags
+        let masterVolume = 50; 
+        let isAudioStarted = false;
+
+        // Volume control elements
+        const volumeControl = document.getElementById('volume-control');
+        const volumeValueDisplay = document.getElementById('volume-value');
+
+        // --- Core Navigation ---
 
         /**
-         * Switches the active menu screen by hiding all screens and showing the target.
+         * Switches the active menu screen and controls background speed.
          * @param {string} targetId - The ID of the menu screen to display (e.g., 'main-menu').
          */
         function navigateTo(targetId) {
+            // Control background scroll speed
+            if (appBody) {
+                if (targetId === 'options-menu') {
+                    // Slower scroll in the options menu
+                    appBody.classList.add('slow-scroll-mode');
+                } else {
+                    // Default speed everywhere else
+                    appBody.classList.remove('slow-scroll-mode');
+                }
+            }
+            
             menuScreens.forEach(screen => {
                 // If this is the target screen, remove 'hidden'
                 if (screen.id === targetId) {
@@ -188,18 +225,18 @@
             });
         }
 
-        // --- Volume Control State and Logic ---
-        let masterVolume = 50; // Initial volume state
-
-        const volumeControl = document.getElementById('volume-control');
-        const volumeValueDisplay = document.getElementById('volume-value');
-
+        // --- Volume Control Logic ---
+        
         /**
-         * Updates the volume display element with the current masterVolume value.
+         * Updates the volume display element and the actual audio volume.
          */
         function updateVolumeDisplay() {
             if (volumeValueDisplay) {
                 volumeValueDisplay.textContent = `[ ${masterVolume}% ]`;
+            }
+            // Control the actual audio volume
+            if (menuMusic) {
+                menuMusic.volume = masterVolume / 100; // Convert 0-100% to 0.0-1.0
             }
         }
 
@@ -242,14 +279,38 @@
             });
         }
         
-        // Run the initial update to set the default text correctly
+        // Run the initial update to set the default volume and display
         updateVolumeDisplay();
 
-        // Add click listeners to all menu items (for navigation, save, and placeholders)
+        // --- Audio Fix: Function to attempt playing audio on any interaction ---
+        function startAudioIfBlocked() {
+            if (!isAudioStarted && menuMusic) {
+                menuMusic.play().then(() => {
+                    console.log("PH Music Started.");
+                    isAudioStarted = true;
+                    // Remove the click listener once audio is successfully started
+                    document.removeEventListener('click', startAudioIfBlocked);
+                }).catch(error => {
+                    // This catch block handles cases where the browser still blocks autoplay
+                    console.warn("PH Autoplay blocked. Music remains off.", error);
+                });
+            }
+        }
+
+        // --- Global Interaction Handler (Includes Autoplay Start) ---
+
+        // Attaches the audio check to a high-level click listener on the entire document
+        // This ensures the audio starts on the very first click on the page.
+        document.addEventListener('click', startAudioIfBlocked);
+
+        // Use a single, comprehensive listener for all menu items
         document.querySelectorAll('.menu-item').forEach(item => {
             // Volume control has dedicated listeners, so we check for other actions here
             if (item.id !== 'volume-control') {
                 item.addEventListener('click', (event) => {
+                    // We rely on the document-level listener to start the audio, 
+                    // but we still handle navigation and actions here.
+
                     const action = item.getAttribute('data-action');
                     const target = item.getAttribute('data-target');
 
@@ -258,7 +319,7 @@
                         navigateTo(target);
                     } else if (action === 'save-settings') {
                         // Handle saving settings (mock action)
-                        console.log('--- PH SETTINGS SAVED! (This is where Firestore data would be updated) ---');
+                        console.log('--- PH SETTINGS SAVED! ---');
                     } else if (action === 'placeholder') {
                         // Handle placeholder buttons with no navigation
                         console.log(`Placeholder button clicked: ${item.textContent.trim()}`);
