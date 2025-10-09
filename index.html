@@ -1,50 +1,274 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    
-    <meta charset="utf=8">
-    
-      <link rel="stylesheet" href="style.css">
-    
-        <title>Webpage</title>
-    
-      <style>
-          --!in style.css, i dislike stylesheets in html!--
-      </style>
-    
-  </head>
-    <body>
-    <h1>Webpage Heading</h1>
-    
-    <p>This is a paragraph, also known as p</p>
-    
-    <hr id=hridge>
-    
-    <p>these lines above and below are HR's (horizontal rules)</p>
-    
-    <hr id=hridge>
-    
-    <h2>Heading 2</h2>
-    
-    <p id="smol">This is a little bit smaller! <br>
-    this is a break!</p>
-    
-      <blockquote id="quote">"this is a little blockquote"
-        <hr>
-        <blockquote id="quote2">
-        "yesterday was the day before today,<br>
-        I guess you could say that about every yesterday,<br> 
-        but yesterday was special."
-        </blockquote> 
-        <hr>
-        "Blockquotes move the contents a little to the right"</blockquote>
-    
-    <hr id=hridge>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Interface with Hover Effect</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* --- 1. Background Styling (Dark Checkerboard - SCROLLING LEFT) --- */
+        
+        /* Define the size and dark colors of the square tile pattern */
+        :root {
+            --tile-size: 100px; 
+            --pattern-size: calc(var(--tile-size) * 2); 
+            --tile-color-a: #1a1a1a; /* Very Dark Gray */
+            --tile-color-b: #000000; /* Black */
+        }
+        
+        /* Keyframe Animation for Pure Left Scroll */
+        @keyframes scrollLeft {
+            from {
+                background-position: 0 0;
+            }
+            to {
+                /* Scroll position shifted to a large negative X value (left), Y remains 0 */
+                background-position: -5000px 0; 
+            }
+        }
+        
+        .scrolling-bg {
+            /* Create the Seamless Dark Checkerboard Pattern */
+            background-image: repeating-conic-gradient(
+                var(--tile-color-b) 0% 25%, /* Black */
+                var(--tile-color-a) 25% 50%  /* Very Dark Gray */
+            );
+            /* Defines the repeating unit size and shifts the pattern to align as perfect squares */
+            background-size: var(--pattern-size) var(--pattern-size); 
+            background-position: calc(var(--tile-size) * -1) 0;
+            background-attachment: fixed; /* Ensures the pattern stays fixed */
+            
+            /* Slowed down to 40 seconds duration */
+            animation: scrollLeft 40s linear infinite;
+        }
 
-    
-      <h2>Heading 3</h2>  
-      
-    <p></p>
-    
-    </body>
+        /* --- 2. Menu Item Hover and Transition Effects (Now also handles click state) --- */
+        
+        .menu-item {
+            cursor: pointer;
+            /* Initial color is low-contrast light gray */
+            color: #808080; 
+            font-size: 32px;
+            font-weight: 600;
+            
+            /* Apply smooth transitions to movement (transform), brightness (filter), and color */
+            transition: transform 0.15s ease-out, filter 0.15s ease-out, color 0.15s ease-out;
+            
+            /* Prevent text selection for a better button feel */
+            user-select: none; 
+        }
+        
+        .menu-item:hover {
+            transform: translateX(15px); /* Moves text 15px to the right */
+            filter: brightness(2); /* Significantly increases brightness */
+            color: #FFFFFF; /* Ensures the text hits pure white on hover */
+        }
+        
+        /* NEW: Feedback when the button is actively being pressed */
+        .menu-item:active {
+            transform: translateX(12px) scale(0.98);
+            filter: brightness(1.5);
+        }
+
+        /* Set Inter font globally */
+        body {
+            font-family: "Inter", sans-serif;
+        }
+    </style>
+</head>
+<!-- The body holds the background and centers the main content -->
+<body class="h-screen w-screen overflow-hidden scrolling-bg flex justify-center items-center">
+
+    <!-- Menu Container - Wraps all menus and acts as the central hub -->
+    <div class="w-full max-w-4xl text-white px-8">
+
+        <!-- ======================================================= -->
+        <!-- 1. MAIN MENU -->
+        <!-- ======================================================= -->
+        <div id="main-menu" class="menu-screen">
+            <!-- Top Section Divider -->
+            <div class="flex items-center text-center my-8">
+                <hr class="flex-grow border-t border-white/30">
+                <span class="px-6 text-xl text-white/90">PH PlaceHolder</span>
+                <hr class="flex-grow border-t border-white/30">
+            </div>
+
+            <!-- Main Menu Items Group -->
+            <div class="grid grid-cols-2 gap-x-8 gap-y-2 mb-12">
+                <!-- Left Column Items -->
+                <div class="space-y-4">
+                    <!-- Placeholder buttons - no navigation target -->
+                    <div class="menu-item" data-action="placeholder">PlaceHolder?</div> 
+                    <div class="menu-item" data-action="placeholder">PHPH</div>
+                    <div class="menu-item" data-action="placeholder">evilPH</div>
+                </div>
+                <!-- Right Column is empty in the image, but ready for future use -->
+                <div></div>
+            </div>
+
+            <!-- Bottom Section Divider -->
+            <div class="flex items-center text-center my-8">
+                <hr class="flex-grow border-t border-white/30">
+                <span class="px-6 text-xl text-white/90">PH ENGINE</span>
+                <hr class="flex-grow border-t border-white/30">
+            </div>
+
+            <!-- Options Item -->
+            <div class="space-y-4 mt-8">
+                <!-- This button navigates to the options menu -->
+                <div class="menu-item" data-action="navigate" data-target="options-menu">options</div>
+            </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- 2. OPTIONS MENU (Hidden by default) -->
+        <!-- ======================================================= -->
+        <div id="options-menu" class="menu-screen hidden">
+            <!-- Options Menu Title -->
+            <div class="flex items-center text-center my-8">
+                <hr class="flex-grow border-t border-white/30">
+                <span class="px-6 text-2xl text-white/90 font-bold">Options Menu PH</span>
+                <hr class="flex-grow border-t border-white/30">
+            </div>
+
+            <!-- Detailed Options List -->
+            <div class="space-y-4 ml-6">
+                <!-- Volume Option (Updated to be interactive) -->
+                <div id="volume-control" class="menu-item flex justify-between items-center" data-action="adjust-volume">
+                    <span>PH Master Volume</span>
+                    <!-- Added ID for easy JS targeting -->
+                    <span id="volume-value" class="text-white/50 text-xl font-normal">[ 50% ]</span>
+                </div>
+                <!-- Display Option (Visual Placeholder) -->
+                <div class="menu-item flex justify-between items-center" data-action="placeholder">
+                    <span>PH Display Mode</span>
+                    <span class="text-white/50 text-xl font-normal">[ Fullscreen ]</span>
+                </div>
+                <!-- Submenu Navigation -->
+                <div class="menu-item" data-action="placeholder">PH Key Bindings</div>
+                
+                <!-- Action Button (Save) -->
+                <div class="menu-item pt-4" data-action="save-settings">PH Save Settings</div>
+            </div>
+            
+            <!-- Back Button -->
+            <div class="space-y-4 mt-16">
+                <!-- This button navigates back to the main menu -->
+                <div class="menu-item" data-action="navigate" data-target="main-menu">BACK</div>
+            </div>
+
+            <!-- Bottom Divider -->
+            <div class="flex items-center text-center my-8">
+                <hr class="flex-grow border-t border-white/30">
+                <span class="px-6 text-xl text-white/90">PH END</span>
+                <hr class="flex-grow border-t border-white/30">
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Get all menu screens
+        const menuScreens = document.querySelectorAll('.menu-screen');
+
+        /**
+         * Switches the active menu screen by hiding all screens and showing the target.
+         * @param {string} targetId - The ID of the menu screen to display (e.g., 'main-menu').
+         */
+        function navigateTo(targetId) {
+            menuScreens.forEach(screen => {
+                // If this is the target screen, remove 'hidden'
+                if (screen.id === targetId) {
+                    screen.classList.remove('hidden');
+                } else {
+                    // Otherwise, hide it
+                    screen.classList.add('hidden');
+                }
+            });
+        }
+
+        // --- Volume Control State and Logic ---
+        let masterVolume = 50; // Initial volume state
+
+        const volumeControl = document.getElementById('volume-control');
+        const volumeValueDisplay = document.getElementById('volume-value');
+
+        /**
+         * Updates the volume display element with the current masterVolume value.
+         */
+        function updateVolumeDisplay() {
+            if (volumeValueDisplay) {
+                volumeValueDisplay.textContent = `[ ${masterVolume}% ]`;
+            }
+        }
+
+        /**
+         * Adjusts the master volume by the given delta, clamping between 0 and 100.
+         * @param {number} delta - The amount to change the volume by (+10 or -10).
+         */
+        function adjustVolume(delta) {
+            let newVolume = masterVolume + delta;
+            
+            // Clamp the value between 0 and 100
+            if (newVolume > 100) {
+                newVolume = 100;
+            } else if (newVolume < 0) {
+                newVolume = 0;
+            }
+            
+            masterVolume = newVolume;
+            updateVolumeDisplay();
+            console.log(`Volume set to: ${masterVolume}%`);
+        }
+        
+        // 1. Handle Left-Click (Volume Up)
+        if (volumeControl) {
+            volumeControl.addEventListener('click', (event) => {
+                // Check if the primary mouse button (button 0) was clicked
+                if (event.button === 0 && event.currentTarget.getAttribute('data-action') === 'adjust-volume') {
+                    adjustVolume(10); // Increase by 10
+                }
+            });
+
+            // 2. Handle Right-Click (Volume Down)
+            volumeControl.addEventListener('contextmenu', (event) => {
+                // Prevent the browser's default right-click context menu from appearing
+                event.preventDefault(); 
+                
+                if (event.currentTarget.getAttribute('data-action') === 'adjust-volume') {
+                    adjustVolume(-10); // Decrease by 10
+                }
+            });
+        }
+        
+        // Run the initial update to set the default text correctly
+        updateVolumeDisplay();
+
+        // Add click listeners to all menu items (for navigation, save, and placeholders)
+        document.querySelectorAll('.menu-item').forEach(item => {
+            // Volume control has dedicated listeners, so we check for other actions here
+            if (item.id !== 'volume-control') {
+                item.addEventListener('click', (event) => {
+                    const action = item.getAttribute('data-action');
+                    const target = item.getAttribute('data-target');
+
+                    if (action === 'navigate' && target) {
+                        // Navigate to a new menu screen
+                        navigateTo(target);
+                    } else if (action === 'save-settings') {
+                        // Handle saving settings (mock action)
+                        console.log('--- PH SETTINGS SAVED! (This is where Firestore data would be updated) ---');
+                    } else if (action === 'placeholder') {
+                        // Handle placeholder buttons with no navigation
+                        console.log(`Placeholder button clicked: ${item.textContent.trim()}`);
+                    }
+                });
+            }
+        });
+
+        // Ensure the main menu is visible on load 
+        navigateTo('main-menu');
+    </script>
+</body>
 </html>
